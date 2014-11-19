@@ -1,0 +1,66 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "tatarandrei@gmail.com",
+    "longName": "Dialer",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/icon_mute.png",
+                "name": "ICON_MUTE",
+                "type": "png"
+            },
+            {
+                "file": "images/icon_answer.png",
+                "name": "ICON_ANSWER",
+                "type": "png"
+            },
+            {
+                "file": "images/icon_hang.png",
+                "name": "ICON_HANG",
+                "type": "png"
+            },
+            {
+                "file": "images/dialer_icon.png",
+                "menuIcon": true,
+                "name": "ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_history.png",
+                "name": "MENU_HISTORY",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_contacts.png",
+                "name": "MENU_CONTACTS",
+                "type": "png"
+            },
+            {
+                "file": "images/call_outgoing.png",
+                "name": "CALL_OUTGOING",
+                "type": "png"
+            },
+            {
+                "file": "images/call_missed.png",
+                "name": "CALL_MISSED",
+                "type": "png"
+            },
+            {
+                "file": "images/call_incoming.png",
+                "name": "CALL_INCOMING",
+                "type": "png"
+            }
+        ]
+    },
+    "shortName": "Dialer",
+    "uuid": "3eb97e36-d782-4d55-88e5-be70145944cc",
+    "versionCode": 1,
+    "versionLabel": "1.1",
+    "watchapp": {
+        "watchface": false
+    }
+}
