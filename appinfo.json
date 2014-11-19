@@ -59,7 +59,7 @@
     "shortName": "Dialer",
     "uuid": "3eb97e36-d782-4d55-88e5-be70145944cc",
     "versionCode": 1,
-    "versionLabel": "1.1",
+    "versionLabel": "1.2",
     "watchapp": {
         "watchface": false
     }

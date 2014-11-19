@@ -65,6 +65,7 @@ static void deinit(void) {
 }
 
 int main(void) {
+  //start
   init();
   app_event_loop();
   deinit();
