@@ -20,18 +20,26 @@ static uint8_t callType;
 
 static void stopVibrate() {
   if (vibrateTimer) {
+    accel_tap_service_unsubscribe();
     vibes_cancel();
     app_timer_cancel(vibrateTimer);
     vibrateTimer = NULL;
   }
 }
 
+static void muteCall() {
+  //mute the call
+  stopVibrate();
+  userSendData(5);
+}
+
+static void onTap(AccelAxisType axis, int32_t direction) {
+  muteCall();
+}
+
 static void callButtonUpHandler(ClickRecognizerRef recognizer, void *context) {
-  if (callType == CALL_RINGING) { 
-    //mute the call
-    stopVibrate();
-    userSendData(5);
-  }
+  if (callType == CALL_RINGING)
+    muteCall();
 }
 
 static void callButtonSelectHandler(ClickRecognizerRef recognizer, void *context) {
@@ -99,7 +107,7 @@ static void callWindowLoad(Window *window) {
 
 static void vibeTimerCallback(void *data) {
   vibes_short_pulse();
-  vibrateTimer = app_timer_register(1500, vibeTimerCallback, data);
+  vibrateTimer = app_timer_register(2000, vibeTimerCallback, data);
 }
 
 static void callWindowUnload(Window* window) {
@@ -153,6 +161,7 @@ bool callHandleDataReceived(DictionaryIterator *received) {
       text_layer_set_text(headerTextLayer, "Incoming call");
       layer_mark_dirty(text_layer_get_layer(headerTextLayer));
       vibeTimerCallback(NULL);
+      accel_tap_service_subscribe(onTap);
     } else if (callType == CALL_ANSWERED) {
       stopVibrate();
       text_layer_set_text(headerTextLayer, "In call");
