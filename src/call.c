@@ -160,8 +160,9 @@ bool callHandleDataReceived(DictionaryIterator *received) {
     if (callType == CALL_RINGING) {
       text_layer_set_text(headerTextLayer, "Incoming call");
       layer_mark_dirty(text_layer_get_layer(headerTextLayer));
-      vibeTimerCallback(NULL);
+      light_enable_interaction();
       accel_tap_service_subscribe(onTap);
+      vibeTimerCallback(NULL);
     } else if (callType == CALL_ANSWERED) {
       stopVibrate();
       text_layer_set_text(headerTextLayer, "In call");
