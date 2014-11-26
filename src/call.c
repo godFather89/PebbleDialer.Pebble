@@ -13,6 +13,7 @@ static AppTimer *vibrateTimer;
 static char callName[30];
 static char callNumber[15];
 static uint8_t callType;
+static bool waitForResponse;
 
 #define CALL_ENDED      0x00
 #define CALL_RINGING    0x01
@@ -56,10 +57,16 @@ static void callButtonDownHandler(ClickRecognizerRef recognizer, void *context) 
   userSendData(3);
 }
 
+static void onMessageSent(DictionaryIterator *iterator, void *context) {
+    app_message_register_outbox_sent(NULL);
+    smsShow(callNumber, true);
+}
+
 static void callButtonLongClickHandler(ClickRecognizerRef recognizer, void *context) {
   if (callType == CALL_RINGING) { 
+    app_message_register_outbox_sent(onMessageSent);
+    waitForResponse = true;
     callButtonDownHandler(recognizer, context);
-    smsShow(callNumber, true);
   }
 }
 
@@ -124,6 +131,7 @@ static void callWindowUnload(Window* window) {
 }
   
 void callShow(void) {
+  waitForResponse = false;
   callWindow = window_create();
   window_set_window_handlers(callWindow, (WindowHandlers) {
     .load = callWindowLoad,
@@ -141,7 +149,8 @@ bool callHandleDataReceived(DictionaryIterator *received) {
   Tuple *showtuple = dict_find(received, 1);
   callType = showtuple->value->uint8;
   if (callType == 0) {
-    window_stack_pop_all(true);
+    if (callWindow != NULL && window_is_loaded(callWindow) && !waitForResponse)
+      window_stack_remove(callWindow, true);
   } else {
     Tuple *tname = dict_find(received, 2);
     Tuple *tnumber = dict_find(received, 3);
