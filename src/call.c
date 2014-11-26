@@ -58,7 +58,7 @@ static void callButtonDownHandler(ClickRecognizerRef recognizer, void *context) 
 
 static void callButtonLongClickHandler(ClickRecognizerRef recognizer, void *context) {
   if (callType == CALL_RINGING) { 
-    stopVibrate();
+    callButtonDownHandler(recognizer, context);
     smsShow(callNumber, true);
   }
 }

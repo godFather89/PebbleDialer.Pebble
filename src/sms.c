@@ -24,7 +24,7 @@ static void smsMenuClick(struct MenuLayer *menu_layer, MenuIndex *cell_index, vo
   dict_write_uint32(iter, 2, smsList[cell_index->row].HashCode);
   app_message_outbox_send();
   
-  window_stack_remove(smsWindow, true);
+  window_stack_pop_all(true);
 }
 
 static int16_t smsMenuCellHeight(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
