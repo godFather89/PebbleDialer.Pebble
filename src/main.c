@@ -1,6 +1,5 @@
 #include <pebble.h>
 #include "contacts.h"
-#include "call.h"
 #include "sms.h"
 
 static Window *window;
@@ -23,7 +22,6 @@ static uint16_t mainMenu_get_num_rows(struct MenuLayer *menu_layer, uint16_t sec
 
 static void in_received_handler(DictionaryIterator *received, void *context) {
   if (contactsHandleDataReceived(received)) return;
-  if (callHandleDataReceived(received)) return;
   if (smsHandleDataReceived(received)) return;
 }
 
@@ -50,7 +48,9 @@ static void mainUnload(Window *window) {
 
 static void init(void) {
   app_message_register_inbox_received(in_received_handler);
-  app_message_open(124, 64);
+  app_message_open(
+    app_message_inbox_size_maximum(), 
+    app_message_outbox_size_maximum());
   
   contactsRefresh();
   

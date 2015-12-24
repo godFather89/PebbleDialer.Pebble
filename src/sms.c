@@ -17,6 +17,8 @@ static Sms smsList[MAX_SMS_COUNT];
 static char smsPhoneNumber[15];
 
 static void smsMenuClick(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+  if (!smsCount) return;
+  
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
   dict_write_uint8(iter, 0, 0x3E);
@@ -28,15 +30,12 @@ static void smsMenuClick(struct MenuLayer *menu_layer, MenuIndex *cell_index, vo
 }
 
 static int16_t smsMenuCellHeight(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-  return 25;
+  return 30;
 }
 
 static void smsMenuDrawRow(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) { 
-  graphics_context_set_text_color(ctx, GColorBlack);
-
   const char *messageText = smsList[cell_index->row].Message;
-  GFont *font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
-  graphics_draw_text(ctx, messageText, font, GRect(5, -5, 134, 28), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+  menu_cell_basic_draw(ctx, cell_layer, messageText, NULL, NULL);
 }
 
 static uint16_t smsMenuGetCount(struct MenuLayer *menu_layer, uint16_t section_index, void *callback_context) {
@@ -56,31 +55,29 @@ static void smsWindowLoad(Window *window) {
   menu_layer_set_click_config_onto_window(smsMenu, window);
 	layer_add_child(window_get_root_layer(window), menu_layer_get_layer(smsMenu));
   
-  smsTextLayer = text_layer_create(GRect(0, 10, frame.size.w, 70));
+  smsTextLayer = text_layer_create(GRect(0, frame.size.h/2 - 30, frame.size.w, 70));
   text_layer_set_font(smsTextLayer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-  text_layer_set_text(smsTextLayer, "Loading Messages");
+  text_layer_set_text(smsTextLayer, "Loading\nMessages");
+  
   text_layer_set_text_alignment(smsTextLayer, GTextAlignmentCenter);
   text_layer_set_overflow_mode(smsTextLayer, GTextOverflowModeWordWrap);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(smsTextLayer));
 }
 
 static void smsWindowUnload(Window *window) {
-  app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
   menu_layer_destroy(smsMenu);
   window_destroy(smsWindow);
   smsWindow = NULL;
 }
 
-void smsShow(const char* destPhoneNumber, bool closeAfterSend) {
+void smsShow(const char* destPhoneNumber) {
   smsCount = 0;
   
-  app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
   copyStr(smsPhoneNumber, destPhoneNumber, sizeof(smsPhoneNumber));
   userSendData(0xE5);
   
   smsWindow = window_create();
   window_set_window_handlers(smsWindow, (WindowHandlers) { .load = smsWindowLoad, .unload = smsWindowUnload });
-  if (closeAfterSend) window_stack_pop_all(false);
   window_stack_push(smsWindow, true);
 }
 
@@ -106,11 +103,10 @@ bool smsHandleDataReceived(DictionaryIterator *received) {
     }
     
     if (isLast) {
-      app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
       smsCount = isEmpty ? 0 : index + 1;
       if (smsWindow != NULL && window_is_loaded(smsWindow)) {
         if (isEmpty) {
-          text_layer_set_text(smsTextLayer, "No Messages");
+          text_layer_set_text(smsTextLayer, "No\nMessages");
         } else {
           layer_set_hidden(text_layer_get_layer(smsTextLayer), true);  
           menu_layer_reload_data(smsMenu);

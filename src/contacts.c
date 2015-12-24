@@ -11,8 +11,9 @@ typedef struct {
 } __attribute__((__packed__)) Contact;
   
 static Contact contacts[2][MAX_CONTACTS];
+
 static bool contactsLoaded[2] = {false, false};
-static uint8_t contactsCount[2] = {0, 0};
+static uint8_t contactsCount[2] = {0,0};
 static uint8_t contactsType;
 
 static Window *contactWindow = NULL;
@@ -26,10 +27,13 @@ static void contactsMenuCall(struct MenuLayer *menu_layer, MenuIndex *cell_index
   dict_write_uint8(iter, 0, 2);
   dict_write_cstring(iter, 1, contacts[contactsType][cell_index->row].Number);
   app_message_outbox_send();
+  
+  window_stack_pop_all(true);
 }
 
 static void contactsMenuSms(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-  smsShow(contacts[contactsType][cell_index->row].Number, false);
+  if (contactsLoaded[contactsType] && contactsCount[contactsType])
+    smsShow(contacts[contactsType][cell_index->row].Number);
 }
 
 static void contactsMenuDrawRow(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) { 
@@ -56,15 +60,15 @@ static void contactsWindowLoad(Window *window) {
   menu_layer_set_click_config_onto_window(contactMenu, window);
 	layer_add_child(window_get_root_layer(window), menu_layer_get_layer(contactMenu));
   
-  contactsTextLayer = text_layer_create(GRect(0, 10, frame.size.w, 70));
+  contactsTextLayer = text_layer_create(GRect(0, frame.size.h/2 - 30, frame.size.w, 70));
   text_layer_set_font(contactsTextLayer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-  text_layer_set_text(contactsTextLayer, "Loading Contacts");
+  text_layer_set_text(contactsTextLayer, "Loading\nContacts");
   text_layer_set_text_alignment(contactsTextLayer, GTextAlignmentCenter);
   text_layer_set_overflow_mode(contactsTextLayer, GTextOverflowModeWordWrap);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(contactsTextLayer));
   if (contactsLoaded[contactsType]) {
     if (contactsCount[contactsType] == 0)
-      text_layer_set_text(contactsTextLayer, "No Contacts");
+      text_layer_set_text(contactsTextLayer, "No\nContacts");
     else
       layer_set_hidden(text_layer_get_layer(contactsTextLayer), true);
   }
@@ -81,7 +85,6 @@ static void contactsWindowLoad(Window *window) {
 }
 
 static void contactsWindowUnload(Window *window) {
-  app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
   if (callType[0]) gbitmap_destroy(callType[0]);
   if (callType[1]) gbitmap_destroy(callType[1]);
   if (callType[2]) gbitmap_destroy(callType[2]);
@@ -99,7 +102,6 @@ void contactsShow(uint8_t type) {
 }
 
 void contactsRefresh() {
-  app_comm_set_sniff_interval(SNIFF_INTERVAL_REDUCED);
   userSendData(1);
 }
 
@@ -130,7 +132,6 @@ bool contactsHandleDataReceived(DictionaryIterator *received) {
     } 
 
     if (isLast) {
-      app_comm_set_sniff_interval(SNIFF_INTERVAL_NORMAL);
       contactsCount[type] = isEmpty ? 0 : index + 1;
       contactsLoaded[type] = true;
       if (contactsType == type && contactWindow != NULL && window_is_loaded(contactWindow)) {
