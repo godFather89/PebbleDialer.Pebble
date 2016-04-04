@@ -2,7 +2,7 @@
 #include "sms.h"
 #include "util.h"
 #define MAX_NAME_LENGTH 20
-#define MAX_NUMBER_LENGTH 15
+#define MAX_NUMBER_LENGTH 51
   
 typedef struct {
   char Name[MAX_NAME_LENGTH];
